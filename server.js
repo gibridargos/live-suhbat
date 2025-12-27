@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { Server } from "socket.io";
 import { fileURLToPath } from "url";
+import multer from "multer";
 
 /* ================= SETUP ================= */
 const __filename = fileURLToPath(import.meta.url);
@@ -28,20 +29,15 @@ const ensureFile = (file) => {
 const readJSON = (file) => {
   try {
     ensureFile(file);
-
     const content = fs.readFileSync(file, "utf8").trim();
     if (!content) return [];
-
     return JSON.parse(content);
   } catch (err) {
     console.error("⚠️ JSON buzilgan, tozalandi:", file);
-    console.error(err.message);
-
     fs.writeFileSync(file, "[]");
     return [];
   }
 };
-
 
 const writeJSON = (file, data) => {
   ensureFile(file);
@@ -51,11 +47,11 @@ const writeJSON = (file, data) => {
 /* ================= FILE PATHS ================= */
 const USERS_FILE = path.join(__dirname, "data/users.json");
 const MESSAGES_FILE = path.join(__dirname, "data/messages.json");
+const MEDIA_FILE = path.join(__dirname, "data/media.json");
 
 /* ================= LOGIN ================= */
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
-
   if (!username || !password) {
     return res.status(400).json({ ok: false, msg: "Ma'lumot yetarli emas" });
   }
@@ -64,12 +60,7 @@ app.post("/login", (req, res) => {
   let user = users.find(u => u.username === username);
 
   if (!user) {
-    user = {
-      id: Date.now(),
-      username,
-      password, // ⚠️ keyinchalik hash qilamiz
-      createdAt: new Date().toISOString()
-    };
+    user = { id: Date.now(), username, password, createdAt: new Date().toISOString() };
     users.push(user);
     writeJSON(USERS_FILE, users);
   }
@@ -88,47 +79,52 @@ io.on("connection", socket => {
     socket.room = room;
     socket.user = user;
 
-    socket.to(room).emit("user-joined", {
-      id: socket.id,
-      user
-    });
+    // 1️⃣ roomdagi boshqa userlar idlarini yuborish
+    const clients = Array.from(io.sockets.adapter.rooms.get(room) || []).filter(id => id !== socket.id);
+    socket.emit("all-users", clients);
+
+    // 2️⃣ boshqa userlarga yangi user kelganini aytish
+    socket.to(room).emit("user-joined", { id: socket.id, user });
   });
 
+  // chat message
   socket.on("chat-message", msg => {
     if (!socket.room || !socket.user) return;
-
     const messages = readJSON(MESSAGES_FILE);
-
-    messages.push({
-      room: socket.room,
-      user: socket.user,
-      text: msg,
-      time: new Date().toISOString()
-    });
-
+    messages.push({ room: socket.room, user: socket.user, text: msg, time: new Date().toISOString() });
     writeJSON(MESSAGES_FILE, messages);
 
-    io.to(socket.room).emit("chat-message", {
-      user: socket.user,
-      msg
-    });
+    io.to(socket.room).emit("chat-message", { user: socket.user, msg });
   });
 
+  // WebRTC signaling
   socket.on("signal", ({ to, data }) => {
     if (!to || !data) return;
-
-    socket.to(to).emit("signal", {
-      from: socket.id,
-      data
-    });
+    socket.to(to).emit("signal", { from: socket.id, data });
   });
 
+  // user disconnect
   socket.on("disconnect", () => {
     console.log("❌ User disconnected:", socket.id);
     if (socket.room) {
       socket.to(socket.room).emit("user-left", socket.id);
     }
   });
+});
+
+/* ================= AUDIO UPLOAD ================= */
+const upload = multer({ dest: "uploads/audio" });
+app.post("/upload-audio", upload.single("audio"), (req, res) => {
+  const media = readJSON(MEDIA_FILE);
+  media.push({
+    type: "audio",
+    user: req.body.user,
+    room: req.body.room,
+    file: req.file.path,
+    time: new Date().toISOString()
+  });
+  writeJSON(MEDIA_FILE, media);
+  res.json({ ok: true });
 });
 
 /* ================= START ================= */

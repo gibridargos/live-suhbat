@@ -3,12 +3,227 @@
 <head>
   <meta charset="UTF-8" />
   <title>Video Chat Room</title>
-
-  <!-- Mobil uchun -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <style>
+/* ===== BODY ===== */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #121212;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css" />
+/* ===== VIDEO GRID ===== */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.video-box {
+  position: relative;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-name {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  background: rgba(0,0,0,0.6);
+  padding: 3px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.video-name span {
+  margin-left: 5px;
+  font-size: 12px;
+}
+
+/* ===== CHAT ===== */
+.chat {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  width: 300px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  border-radius: 15px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  z-index: 10;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 5px;
+  padding-right: 5px;
+}
+
+.messages p {
+  margin: 5px 0;
+  padding: 8px 12px;
+  border-radius: 20px;
+  max-width: 80%;
+  word-wrap: break-word;
+  font-size: 13px;
+  position: relative;
+}
+
+.messages p.self {
+  background: #4caf50;
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 0;
+}
+
+.messages p.other {
+  background: #2c2c2c;
+  color: #fff;
+  align-self: flex-start;
+  border-bottom-left-radius: 0;
+}
+
+.messages .username {
+  font-weight: bold;
+  font-size: 11px;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.messages .time {
+  font-size: 10px;
+  color: #aaa;
+  position: absolute;
+  bottom: 2px;
+  right: 10px;
+}
+
+.chat input {
+  border-radius: 20px;
+  border: none;
+  padding: 8px 15px;
+  outline: none;
+  font-size: 14px;
+  background: #2c2c2c;
+  color: #fff;
+}
+
+.chat input::placeholder {
+  color: #aaa;
+}
+
+/* ===== CONTROLS ===== */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px auto;
+  background: #1e1e1e;
+  padding: 8px 12px;
+  border-radius: 50px;
+  width: fit-content;
+  position: relative;
+  z-index: 10;
+}
+
+.controls button {
+  background: #333;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.controls button:hover {
+  background: #555;
+}
+
+.controls .on {
+  color: lime;
+}
+
+.controls .off {
+  color: red;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .chat {
+    width: 90%;
+    right: 5%;
+    bottom: 10px;
+    max-height: 250px;
+  }
+
+  .video-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+  }
+
+  .controls {
+    bottom: 260px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+  }
+
+  .controls button {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat {
+    width: 95%;
+    right: 2.5%;
+    bottom: 10px;
+    max-height: 200px;
+  }
+
+  .video-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 6px;
+  }
+
+  .controls {
+    bottom: 220px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 6px;
+    padding: 5px 8px;
+  }
+
+  .controls button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+  </style>
 </head>
 <body>
 
@@ -26,9 +241,14 @@
     />
   </div>
 
-  <!-- SOCKET -->
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button id="micBtn" class="on">🎙 Mic</button>
+    <button id="camBtn" class="on">📷 Cam</button>
+    <button id="recBtn">⏺ Record</button>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
-
 </body>
 </html>
