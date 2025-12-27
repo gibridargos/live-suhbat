@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="center">
+
+  <form onsubmit="joinRoom(event)">
+    <h2>Video Chat Login</h2>
+    <input id="username" placeholder="Ismingiz" required />
+    <input id="room" placeholder="Room ID" required />
+    <button>Kirish</button>
+  </form>
+
+<script>
+function joinRoom(e){
+  e.preventDefault();
+  const u = username.value;
+  const r = room.value;
+  location.href = `room.html?u=${u}&r=${r}`;
+}
+</script>
+
+</body>
+</html>

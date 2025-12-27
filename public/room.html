@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <title>Video Chat Room</title>
+
+  <!-- Mobil uchun -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- VIDEOS -->
+  <div id="videos" class="video-grid"></div>
+
+  <!-- CHAT -->
+  <div class="chat">
+    <div id="messages" class="messages"></div>
+    <input
+      id="msg"
+      type="text"
+      placeholder="Xabar yozing va Enter bosing..."
+      autocomplete="off"
+    />
+  </div>
+
+  <!-- SOCKET -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
